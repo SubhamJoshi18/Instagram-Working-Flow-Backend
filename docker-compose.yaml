@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+
+    nginx-api-gateway:
+        build: ./nginx-api-gateway
+        ports:
+          - '80:80'
+        
+
+    auth-microservice: 
+      build: ./auth-microservice
+      ports:
+        - '3000:3000'
+      depends_on:
+        - db
+      restart: always
+      networks:
+        - instagram
+        
+
+    post-microservice:
+      build: ./post-service
+      ports:
+        - '3002:3002'
+      depends_on:
+        - db
+      restart: always
+      networks:
+        - instagram
+
+    feed-recommendation-service:
+      build: ./feed-recommendation-service
+      ports:
+        - '3001:3001'
+      depends_on: 
+        - db
+      restart: always
+      networks:
+        - instagram
+
+    db: 
+      image: mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: my_database
+      
+      restart: always
+      volumes:
+        - db_data:/var/lib/mysql
+      env_file: .env
+      ports:
+        - '33066:3306'
+      networks:
+        - instagram
+      
+    adminer:
+      image: adminer
+      environment:
+        ADMINER_DEFAULT_SERVER: db
+      ports:
+        - '5001:8000'
+      networks:
+        - instagram
+
+
+
+volumes:
+  db_data:
+
+networks:
+  instagram:
+    driver: bridge
+      
